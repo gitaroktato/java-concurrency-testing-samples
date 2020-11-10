@@ -1,6 +1,7 @@
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
@@ -15,7 +16,7 @@ public class IncrementorTest {
     public void testIncrement() throws InterruptedException {
         List<Integer> results = new CopyOnWriteArrayList<>();
         var subject = new Incrementor();
-        var barrier = new CyclicBarrier(THREADS);
+        var barrier = new CyclicBarrier(200000);
         var pool = Executors.newFixedThreadPool(THREADS);
         for (int i = 0; i < THREADS; i++) {
             pool.submit(() -> {
@@ -32,8 +33,8 @@ public class IncrementorTest {
             });
         }
         pool.shutdown();
-        // TODO check for timeout
-        pool.awaitTermination(10, TimeUnit.SECONDS);
+        Assertions.assertTimeout(Duration.ofSeconds(10),
+                () -> pool.awaitTermination(11, TimeUnit.SECONDS));
         var duplicateElements = results.stream()
                 .filter(e -> Collections.frequency(results, e) > 1)
                 .distinct()
