@@ -16,7 +16,7 @@ public class IncrementorTest {
     public void testIncrement() throws InterruptedException {
         List<Integer> results = new CopyOnWriteArrayList<>();
         var subject = new Incrementor();
-        var barrier = new CyclicBarrier(200000);
+        var barrier = new CyclicBarrier(THREADS);
         var pool = Executors.newFixedThreadPool(THREADS);
         for (int i = 0; i < THREADS; i++) {
             pool.submit(() -> {
