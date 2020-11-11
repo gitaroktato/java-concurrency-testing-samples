@@ -1,30 +1,17 @@
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.RepeatedTest;
 
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
-import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class IncrementorTest {
 
     public static final int CYCLES = 200;
-    public static final int THREADS = 200;
-
-    @Test
-    public void testIncrement() throws InterruptedException {
-        List<Integer> results = new CopyOnWriteArrayList<>();
-        var subject = new Incrementor();
-        runConcurrently(THREADS, CYCLES, () -> {
-            var result = subject.increment();
-            results.add(result);
-        });
-        var duplicateElements = collectDuplicates(results);
-        Assertions.assertIterableEquals(Collections.emptyList(), duplicateElements);
-    }
+    public static final int THREADS = 20;
 
     private void runConcurrently(int treads, int cycles, Runnable criticalSection) {
         var barrier = new CyclicBarrier(treads);
@@ -51,8 +38,36 @@ public class IncrementorTest {
                 .collect(Collectors.toList());
     }
 
+    @RepeatedTest(5)
+    public void testIncrementIsThreadSafe() throws InterruptedException {
+        List<Integer> results = new CopyOnWriteArrayList<>();
+        var subject = new SimpleIncrementor();
+        runConcurrently(THREADS, CYCLES, () -> {
+            var result = subject.increment();
+            results.add(result);
+        });
+        var duplicateElements = collectDuplicates(results);
+        Assertions.assertIterableEquals(Collections.emptyList(), duplicateElements);
+    }
+
+
+    @RepeatedTest(5)
+    public void testVolatileIncrementIsThreadSafe() throws InterruptedException {
+        List<Integer> results = new CopyOnWriteArrayList<>();
+        var subject = new VolatileIncrementor();
+        runConcurrently(THREADS, CYCLES, () -> {
+            var result = subject.increment();
+            results.add(result);
+        });
+        var duplicateElements = collectDuplicates(results);
+        Assertions.assertIterableEquals(Collections.emptyList(), duplicateElements);
+    }
+
     // TODO BoundedBuffer ??
-    // TODO volatile Incrementor?
-    // TODO better abstraction of test phases?
+    // TODO PMD
+    // TODO FindBugs
+    // TODO VMLens
+    // TODO https://github.com/openjdk/jcstress
+    // TODO https://github.com/google/thread-weaver
 
 }
