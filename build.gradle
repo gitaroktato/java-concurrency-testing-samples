@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id "com.github.spotbugs" version "4.6.0"
+    id 'pmd'
 }
 
 group 'org.example'
@@ -21,7 +22,15 @@ spotbugsMain {
             destination = file("$buildDir/reports/spotbugs/main/spotbugs.html")
             stylesheet = 'fancy-hist.xsl'
         }
+        xml {
+            enabled = false
+        }
     }
+    includeFilter = file("src/main/spotbugs/include.xml")
+}
+
+pmd {
+    ruleSets = ["category/java/multithreading.xml"]
 }
 
 dependencies {
