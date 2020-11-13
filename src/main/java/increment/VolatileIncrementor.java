@@ -1,3 +1,5 @@
+package increment;
+
 public class VolatileIncrementor implements Incrementor {
 
     private volatile int value = 0;

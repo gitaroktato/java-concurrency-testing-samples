@@ -1,3 +1,5 @@
+package increment;
+
 public class SimpleIncrementor implements Incrementor {
 
     private int value = 0;
