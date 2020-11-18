@@ -25,6 +25,7 @@ hs_err_pid*
 # Gradle related
 build
 .gradle
+target
 
 # IntelliJ related items
 .idea
