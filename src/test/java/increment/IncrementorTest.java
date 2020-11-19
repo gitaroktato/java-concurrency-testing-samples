@@ -10,28 +10,12 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static concurrency.Test.runConcurrently;
+
 public class IncrementorTest {
 
     public static final int CYCLES = 200;
     public static final int THREADS = 20;
-
-    private void runConcurrently(int treads, int cycles, Runnable criticalSection) {
-        var barrier = new CyclicBarrier(treads);
-        var pool = Executors.newFixedThreadPool(treads);
-        IntStream.range(0, treads).forEach(i ->
-                pool.submit(() -> {
-                    try {
-                        barrier.await();
-                        IntStream.range(0, cycles).forEach(j -> criticalSection.run());
-                        barrier.await();
-                    } catch (InterruptedException | BrokenBarrierException e) {
-                        Assertions.fail(e);
-                    }
-                }));
-        pool.shutdown();
-        Assertions.assertTimeout(Duration.ofSeconds(10),
-                () -> pool.awaitTermination(11, TimeUnit.SECONDS));
-    }
 
     private List<Integer> collectDuplicates(List<Integer> results) {
         return results.stream()
@@ -65,9 +49,16 @@ public class IncrementorTest {
         Assertions.assertIterableEquals(Collections.emptyList(), duplicateElements);
     }
 
-    // TODO BoundedBuffer ??
-    // TODO VMLens
-    // TODO https://github.com/openjdk/jcstress
-    // TODO https://github.com/google/thread-weaver
+    @RepeatedTest(5)
+    public void testWronglySynchronizedIncrementIsThreadSafe() throws InterruptedException {
+        List<Integer> results = new CopyOnWriteArrayList<>();
+        var subject = new WronglySynchronizedncrementor();
+        runConcurrently(THREADS, CYCLES, () -> {
+            var result = subject.increment();
+            results.add(result);
+        });
+        var duplicateElements = collectDuplicates(results);
+        Assertions.assertIterableEquals(Collections.emptyList(), duplicateElements);
+    }
 
 }

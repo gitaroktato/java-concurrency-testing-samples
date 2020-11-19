@@ -1,31 +1,24 @@
 package collections;
 
-import com.vmlens.api.AllInterleavings;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.RepeatedTest;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static concurrency.Test.runConcurrently;
 
 public class ConcurrentUpdaterTest {
 
-    @Test
-    public void testIncrement() throws InterruptedException {
-        var updater = new ConcurrentUpdater();
-        try (AllInterleavings allInterleavings =
-                     new AllInterleavings("tests.ConcurrentUpdaterWithVmLensTest")) {
-            while (allInterleavings.hasNext()) {
-                Thread first = new Thread(() -> {
-                    updater.putOrConcat("joe", "smith");
-                });
-                Thread second = new Thread(() -> {
-                    updater.putOrConcat("joe", "smith");
-                });
-                first.start();
-                second.start();
-                first.join();
-                second.join();
-                assertEquals(updater.get("joe"), "smith smith");
-            }
-        }
+    private static final int THREADS = 20;
+    private static final int CYCLES = 200;
+
+    @RepeatedTest(5)
+    public void testUpdate() throws InterruptedException {
+        var subject = new ConcurrentUpdater();
+        runConcurrently(THREADS, CYCLES, () -> {
+            subject.putOrConcat("key", "value");
+        });
+        var result = subject.get("key");
+        var values = result.split(" ");
+        Assertions.assertEquals(THREADS * CYCLES, values.length);
     }
 
 }
