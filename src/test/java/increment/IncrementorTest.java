@@ -66,8 +66,6 @@ public class IncrementorTest {
     }
 
     // TODO BoundedBuffer ??
-    // TODO PMD
-    // TODO FindBugs
     // TODO VMLens
     // TODO https://github.com/openjdk/jcstress
     // TODO https://github.com/google/thread-weaver

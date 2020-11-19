@@ -39,8 +39,3 @@ dependencies {
     testImplementation("com.vmlens:api:1.1.0")
 }
 
-task runVmlens(type:Exec) {
-    executable "mvn"
-    args "test"
-}
-
